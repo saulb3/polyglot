@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 /**
@@ -24,37 +25,41 @@ public class PolyglotMessageLoader implements MessageLoader {
     private static final String FOLDER_PATH = "lang/";
 
     @Override
-    public void loadMessages(MessageStore messageStore, Plugin plugin) {
+    public void loadMessages(MessageStore messageStore, Plugin plugin, BiConsumer<LogLevel, String> log) {
         Instant now = Instant.now();
         Pattern pattern = Pattern.compile(FOLDER_PATH + "[a-z]{2}/.*\\.json");
-        plugin.getLogger().info("[POLYGLOT] Loading polyglot messages...");
+        log.accept(LogLevel.INFO, "Loading polyglot messages.");
         try(PluginInspector inspector = Reflex.getInspector(plugin)) {
             inspector.getResources(pattern)
-                    .forEach(resource -> this.loadResource(messageStore, plugin, resource));
+                    .forEach(resource -> this.loadResource(messageStore, plugin, resource, log));
         }
         Duration duration = Duration.between(now, Instant.now());
-        plugin.getLogger().info("[POLYGLOT] Loaded messages. time: " + (duration.toNanos() / 10000) / 100D + "ms");
+        log.accept(LogLevel.INFO, "> Messages has been loaded. time: " + (duration.toNanos() / 10000) / 100D + "ms");
     }
 
-    private void loadResource(MessageStore messageStore, Plugin plugin, String resource) {
+    public void loadMessages(MessageStore messageStore, Plugin plugin) {
+        this.loadMessages(messageStore, plugin, (_, _) -> {});
+    }
+
+    private void loadResource(MessageStore messageStore, Plugin plugin, String resource, BiConsumer<LogLevel, String> log) {
         String language = resource.substring(FOLDER_PATH.length()).split("/")[0];
 
         InputStream inputStream = plugin.getResource(resource);
         if(inputStream == null) {
-            plugin.getLogger().warning("| Resource '" + resource + "' wasn't found.");
+            log.accept(LogLevel.WARN, "| Resource '" + resource + "' wasn't found.");
             return;
         }
 
 
         try(JsonReader reader = new JsonReader(new InputStreamReader(inputStream))) {
-            plugin.getLogger().info("| Loading messages from '" + resource + "'.");
+            log.accept(LogLevel.INFO,"| Loading messages from '" + resource + "'.");
             this.loadJsonElement(messageStore, language, "", new JsonParser().parse(reader));
         }
         catch(JsonSyntaxException e) {
-            plugin.getLogger().warning("| File '" + resource + "' has a bad json syntax.");
+            log.accept(LogLevel.WARN, "| File '" + resource + "' has a bad json syntax.");
         }
         catch (IOException e) {
-            plugin.getLogger().warning("| An error occurred while closing input stream.");
+            log.accept(LogLevel.WARN, "| An error occurred while closing input stream.");
         }
     }
 
