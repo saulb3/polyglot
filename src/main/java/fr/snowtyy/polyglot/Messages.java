@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.PriorityQueue;
+import java.util.function.BiConsumer;
 
 public final class Messages {
 
@@ -33,8 +34,12 @@ public final class Messages {
         languageResolvers.add(new WeightedResolver(resolver, weight));
     }
 
+    public static void loadMessages(Plugin plugin, BiConsumer<MessageLoader.LogLevel, String> log) {
+        messageLoader.loadMessages(messageStore, plugin, log);
+    }
+
     public static void loadMessages(Plugin plugin) {
-        messageLoader.loadMessages(messageStore, plugin);
+        messageLoader.loadMessages(messageStore, plugin, (_, _) -> {});
     }
 
     public static boolean exists(Object context, String path) {

@@ -11,8 +11,6 @@ public interface MessageLoader {
 
     void loadMessages(MessageStore messageStore, Plugin plugin, BiConsumer<LogLevel, String> log);
 
-    void loadMessages(MessageStore messageStore, Plugin plugin);
-
     enum LogLevel {
         INFO,
         WARN

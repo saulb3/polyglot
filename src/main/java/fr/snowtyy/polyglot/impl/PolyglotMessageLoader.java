@@ -37,10 +37,6 @@ public class PolyglotMessageLoader implements MessageLoader {
         log.accept(LogLevel.INFO, "> Messages has been loaded. time: " + (duration.toNanos() / 10000) / 100D + "ms");
     }
 
-    public void loadMessages(MessageStore messageStore, Plugin plugin) {
-        this.loadMessages(messageStore, plugin, (_, _) -> {});
-    }
-
     private void loadResource(MessageStore messageStore, Plugin plugin, String resource, BiConsumer<LogLevel, String> log) {
         String language = resource.substring(FOLDER_PATH.length()).split("/")[0];
 
